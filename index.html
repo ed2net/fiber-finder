@@ -1,0 +1,440 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Цвета волокон</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="theme-color" content="#0b4f57">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+html,body{margin:0}
+/* Layout: field tool — controls column (firm/cable/search, signal chain) beside the full tube/fiber colour grid; stacks on phone */
+:root{
+  --bg:#e9eef2; --surface:#ffffff; --ink:#14212c; --muted:#5a6977; --line:#d2dae1;
+  --accent:#0b7480; --accent-soft:#d8eef0; --hit:#ff2d55;
+  --ok-bg:#d9f2df; --ok-fg:#135c25; --warn-bg:#fff1c2; --warn-fg:#6b4f00; --bad-bg:#ffd9d9; --bad-fg:#8a1111;
+  --f-ui:"Rubik",system-ui,-apple-system,"Segoe UI",Arial,sans-serif;
+  --f-num:"JetBrains Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f161c; --surface:#18222b; --ink:#e6edf2; --muted:#93a3b1; --line:#2c3a46;
+  --accent:#3cc3cf; --accent-soft:#16363b; --hit:#ff5a7a;
+  --ok-bg:#163a22; --ok-fg:#9be3ad; --warn-bg:#3a3010; --warn-fg:#f3d77a; --bad-bg:#43191c; --bad-fg:#ffaaaa; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f161c; --surface:#18222b; --ink:#e6edf2; --muted:#93a3b1; --line:#2c3a46;
+  --accent:#3cc3cf; --accent-soft:#16363b; --hit:#ff5a7a;
+  --ok-bg:#163a22; --ok-fg:#9be3ad; --warn-bg:#3a3010; --warn-fg:#f3d77a; --bad-bg:#43191c; --bad-fg:#ffaaaa; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-ui);font-size:15px;line-height:1.45}
+.wrap{max-width:1400px;margin:0 auto;padding-block:16px 32px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.lang{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;flex:none}
+.lang button{border:0;background:var(--surface);color:var(--ink);padding:8px 14px;font:500 .9rem var(--f-ui);cursor:pointer}
+.lang button[aria-pressed="true"]{background:var(--accent);color:var(--surface)}
+h1{font-size:1.35rem;margin:0;font-weight:700;text-wrap:balance}
+h1 small{display:block;font-size:.8rem;font-weight:400;color:var(--muted)}
+.grid{display:grid;grid-template-columns:minmax(300px,420px) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:860px){.grid{grid-template-columns:minmax(0,1fr)}}
+.col{display:flex;flex-direction:column;gap:16px;min-width:0}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.panel h2{margin:0;font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:500}
+.ph{display:flex;justify-content:space-between;align-items:center;gap:8px}
+label{display:flex;flex-direction:column;gap:4px;font-size:.85rem;color:var(--muted)}
+select,input{font:500 1rem var(--f-ui);color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px;width:100%}
+select:disabled{opacity:.5}
+input[type=number]{font-family:var(--f-num);direction:ltr}
+.total .n,.res .n{direction:ltr;unicode-bidi:isolate}
+select:focus,input:focus,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:520px){.row2{grid-template-columns:minmax(0,1fr)}}
+select{text-overflow:ellipsis}
+.big input{font-size:1.6rem;padding:12px;text-align:center}
+.result{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.res{border:1px solid var(--line);border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.res .k{font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.res .n{font:700 1.8rem/1 var(--f-num)}
+.chip{display:flex;align-items:center;gap:8px;font-weight:500;font-size:.95rem;min-width:0}
+.chip b{font-weight:500;display:flex;flex-direction:column;line-height:1.25}
+.chip small{font-size:.78rem;font-weight:500;color:var(--hit)}
+.sw{width:22px;height:22px;border-radius:5px;border:1px solid rgba(127,127,127,.6);flex:none}
+.msg{color:var(--muted);font-size:.9rem}
+.err{color:var(--hit)}
+.link{background:none;border:0;color:var(--accent);font:500 .9rem var(--f-ui);cursor:pointer;padding:0;text-decoration:underline;align-self:flex-start}
+.btn{background:var(--bg);border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:6px 12px;font:500 .85rem var(--f-ui);cursor:pointer}
+
+/* signal chain (as on the sketch): OLT → distance → [before | splitter | after] → distance → [before | splitter | after] */
+.chain{display:flex;flex-direction:column;gap:4px}
+.pt,.spl,.dist{display:flex;flex-direction:column;gap:4px;min-width:0}
+.pt label,.spl label,.dist label{font-size:.82rem;font-weight:500;color:var(--muted);text-align:center}
+.inw{position:relative;direction:ltr}
+.inw input{padding-left:30px;font-family:var(--f-num);direction:ltr}
+.pm{position:absolute;left:3px;top:50%;transform:translateY(-50%);width:25px;height:30px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:700 1.05rem var(--f-ui);cursor:pointer;padding:0;z-index:1}
+.pt input{border:2px dashed var(--line);background:var(--surface);font-size:.95rem;font-weight:700;text-align:center;padding:10px 2px 10px 30px;letter-spacing:-.02em}
+.pt.olt{max-width:220px;width:100%;align-self:center}
+.pt.anchor input{border:2px solid var(--accent);background:var(--accent-soft)}
+.pt.calc input{color:var(--accent);border-style:solid}
+.spl select{border:2px solid var(--ink);font-weight:700;text-align:center;padding:10px 4px}
+.spl .v{font-size:.8rem}
+.chk{flex-direction:row;align-items:center;gap:10px;font-size:.9rem;color:var(--ink);font-weight:500;cursor:pointer}
+.chk input{width:22px;height:22px;flex:none;accent-color:var(--accent);margin:0}
+.trio-h{text-align:center;font-weight:700;font-size:.95rem;color:var(--ink);margin-top:4px}
+.trio-h label{color:var(--ink);font-size:.95rem}
+.trio{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr) minmax(0,1.2fr);gap:6px;align-items:start}
+.dist{position:relative;padding-top:18px}
+.dist::before{content:"";position:absolute;top:0;left:50%;height:16px;border-left:2px dashed var(--accent)}
+.dline{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center}
+.dist input{border-radius:99px;text-align:center}
+.v{font:700 .95rem var(--f-num);white-space:nowrap;color:var(--hit);font-variant-numeric:tabular-nums;text-align:center;direction:ltr;unicode-bidi:isolate}
+@keyframes flash{0%,100%{box-shadow:none}50%{box-shadow:0 0 0 6px var(--hit)}}
+td.flash{animation:flash .5s 3}
+.total{display:flex;align-items:baseline;justify-content:space-between;gap:10px;border-top:1px solid var(--line);padding-top:10px}
+.total .n{font:700 1.9rem var(--f-num);color:var(--accent);font-variant-numeric:tabular-nums}
+.status{border-radius:8px;padding:10px 12px;font-weight:500;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.status span:last-child{font-family:var(--f-num)}
+.st-ok{background:var(--ok-bg);color:var(--ok-fg)}.st-low{background:var(--warn-bg);color:var(--warn-fg)}.st-bad{background:var(--bad-bg);color:var(--bad-fg)}
+details{font-size:.85rem;color:var(--muted)}
+details summary{cursor:pointer}
+details .row2{margin-top:8px}
+
+/* table */
+.tbl-wrap{position:relative;overflow:auto;max-height:78vh;border:1px solid var(--line);border-radius:8px}
+table{border-collapse:separate;border-spacing:0;font:700 .85rem var(--f-num);font-variant-numeric:tabular-nums}
+th,td{min-width:42px;height:32px;text-align:center;padding:0 4px;border-bottom:1px solid rgba(0,0,0,.25);border-inline-end:1px solid rgba(0,0,0,.25);cursor:pointer}
+thead th{position:sticky;top:0;z-index:2;height:36px}
+th.tube{position:sticky;inset-inline-start:0;z-index:1;min-width:46px}
+thead th.corner{inset-inline-start:0;z-index:3;background:var(--surface);color:var(--muted);font:500 .7rem var(--f-ui);cursor:default}
+.stripe{background-image:repeating-linear-gradient(135deg,transparent 0 13px,var(--sc) 13px 15px)}
+td.hit{outline:3px solid var(--hit);outline-offset:-3px;position:relative;z-index:1;transform:scale(1.12)}
+tr.hitrow th.tube{outline:3px solid var(--hit);outline-offset:-3px}
+.cap{font-size:.8rem;color:var(--muted)}
+@media (prefers-reduced-motion:no-preference){td{transition:transform .12s}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <h1><span data-t="title"></span><small data-t="sub"></small></h1>
+    <div class="lang" role="group" aria-label="Language">
+      <button id="lang-ru" type="button">RU</button>
+      <button id="lang-he" type="button">עב</button>
+    </div>
+  </header>
+
+  <div class="grid">
+    <div class="col">
+      <section class="panel">
+        <h2 data-t="cableH"></h2>
+        <div class="row2">
+          <label><span data-t="cableType"></span><select id="cable"></select></label>
+          <label><span data-t="firm"></span><select id="firm"></select></label>
+        </div>
+        <label class="big"><span data-t="fiberNo"></span><input id="fiber" type="number" inputmode="numeric" min="1" value="150"></label>
+        <div id="result"></div>
+      </section>
+
+      <section class="panel">
+        <div class="ph"><h2 data-t="lossH"></h2><button class="btn" id="reset" type="button" data-t="reset"></button></div>
+        <div class="msg" data-t="hint"></div>
+        <label class="chk"><input type="checkbox" id="link64" checked><span data-t="link64"></span></label>
+        <div class="chain">
+          <div class="pt olt" id="pt0"><label for="p0" data-t="p0"></label><div class="inw"><button type="button" class="pm" data-for="p0" aria-label="±">±</button><input id="p0" type="text" inputmode="decimal" autocomplete="off" placeholder="dBm"></div></div>
+          <div class="dist"><label for="d1" data-t="dist"></label><div class="dline"><input id="d1" type="number" inputmode="decimal" min="0" step="0.1" placeholder="0"><span class="v" id="l0"></span></div></div>
+          <div class="trio-h"><label for="sp1" data-t="closure"></label></div>
+          <div class="trio">
+            <div class="pt" id="pt1"><label for="p1" data-t="before"></label><div class="inw"><button type="button" class="pm" data-for="p1" aria-label="±">±</button><input id="p1" type="text" inputmode="decimal" autocomplete="off" placeholder="dBm"></div></div>
+            <div class="spl"><select id="sp1"></select><span class="v" id="l1"></span></div>
+            <div class="pt" id="pt2"><label for="p2" data-t="after"></label><div class="inw"><button type="button" class="pm" data-for="p2" aria-label="±">±</button><input id="p2" type="text" inputmode="decimal" autocomplete="off" placeholder="dBm"></div></div>
+          </div>
+          <div class="dist"><label for="d2" data-t="dist"></label><div class="dline"><input id="d2" type="number" inputmode="decimal" min="0" step="0.1" placeholder="0"><span class="v" id="l2"></span></div></div>
+          <div class="trio-h"><label for="sp2" data-t="cabinet"></label></div>
+          <div class="trio">
+            <div class="pt" id="pt3"><label for="p3" data-t="before"></label><div class="inw"><button type="button" class="pm" data-for="p3" aria-label="±">±</button><input id="p3" type="text" inputmode="decimal" autocomplete="off" placeholder="dBm"></div></div>
+            <div class="spl"><select id="sp2"></select><span class="v" id="l3"></span></div>
+            <div class="pt" id="pt4"><label for="p4" data-t="after"></label><div class="inw"><button type="button" class="pm" data-for="p4" aria-label="±">±</button><input id="p4" type="text" inputmode="decimal" autocomplete="off" placeholder="dBm"></div></div>
+          </div>
+        </div>
+        <div class="msg" id="approx" hidden data-t="approx"></div>
+        <div class="total"><span data-t="total"></span><span class="n" id="total">0.00</span></div>
+        <div class="status" id="status" hidden></div>
+        <details>
+          <summary data-t="settings"></summary>
+          <div class="row2">
+            <label><span data-t="rate"></span><input id="rate" type="number" inputmode="decimal" min="0" step="0.01" value="0.25"></label>
+            <label><span data-t="sens"></span><div class="inw"><button type="button" class="pm" data-for="sens" aria-label="±">±</button><input id="sens" type="text" inputmode="decimal" autocomplete="off" value="-23.9"></div></label>
+          </div>
+        </details>
+      </section>
+    </div>
+
+    <section class="panel">
+      <h2 id="tblTitle"></h2>
+      <div class="tbl-wrap"><table id="tbl"></table></div>
+      <div class="cap" data-t="cap"></div>
+    </section>
+  </div>
+</div>
+
+<script>
+let LANG = "ru"; try{ LANG = localStorage.getItem("ff_lang") || "ru"; }catch(e){}
+
+// ===== Цвета =====
+const COLORS = {
+  blue:{hex:"#2f6fd6",ru:"синий",he:"כחול",dark:false},
+  orange:{hex:"#f39a1e",ru:"оранжевый",he:"כתום",dark:true},
+  green:{hex:"#3e9e4a",ru:"зелёный",he:"ירוק",dark:false},
+  brown:{hex:"#8b5a2b",ru:"коричневый",he:"חום",dark:false},
+  gray:{hex:"#9c9fa3",ru:"серый",he:"אפור",dark:true},
+  white:{hex:"#ffffff",ru:"белый",he:"לבן",dark:true},
+  red:{hex:"#e0261b",ru:"красный",he:"אדום",dark:false},
+  black:{hex:"#111111",ru:"чёрный",he:"שחור",dark:false},
+  yellow:{hex:"#f4e400",ru:"жёлтый",he:"צהוב",dark:true},
+  violet:{hex:"#6b3ec2",ru:"фиолетовый",he:"סגול",dark:false},
+  pink:{hex:"#f08bd8",ru:"розовый",he:"ורוד",dark:true},
+  aqua:{hex:"#2fd3d3",ru:"бирюзовый",he:"טורקיז",dark:true}
+};
+const STD = ["blue","orange","green","brown","gray","white","red","black","yellow","violet","pink","aqua"];
+const plain = keys => keys.map(k=>({k,s:false}));   // без полосы
+const strip = keys => keys.map(k=>({k,s:true}));    // с полосой
+
+// ===== Трубки F288 (24×12) по фирмам =====
+const F288_TUBES = {
+  HOT:     [...plain(STD), ...strip(STD)],
+  PARTNER: [...strip(STD), ...plain(["violet","pink","aqua","blue","orange","green","brown","gray","white","red","black","yellow"])],
+  RIMON:   [...plain(STD), ...strip(["blue","orange","green"]), ...plain(["blue","orange","green","brown","gray","white","red","black","yellow"])]
+};
+const FIRMS = [
+  {id:"HOT",scheme:"HOT"},{id:"CELLCOM",scheme:"HOT"},{id:"IBC",scheme:"HOT"},{id:"UNIGEA",scheme:"HOT"},
+  {id:"PARTNER",scheme:"PARTNER"},{id:"RIMON",scheme:"RIMON"}
+];
+
+// ===== Типы кабелей =====
+const CABLES = {
+  F288:{name:"F288 (24×12)", fibers:12, byFirm:true},
+  F48: {name:"F48 (8×6)", fibers:6, tubes:plain(STD.slice(0,8))},
+  F72: {name:{ru:"F72 другой тип (6×12)",he:"F72 סוג אחר · 6×12"}, fibers:12, tubes:plain(["blue","green","white","red","yellow","violet"])}
+};
+const FIBERS = plain(STD);
+
+// ===== Сплиттеры =====
+const SPLITTERS = [{id:"none",db:0},{id:"1:2",db:3.5},{id:"1:4",db:7},{id:"1:8",db:10.5},{id:"1:16",db:14.5},{id:"1:32",db:18}];
+
+const TT = {
+  ru:{title:"Цвета волокон и затухание",sub:"Оптический кабель · поиск волокна · бюджет линии",
+    cableH:"Кабель",cableType:"Тип кабеля",firm:"Фирма",fiberNo:"Номер волокна",
+    tube:"Трубка",fiber:"Волокно в трубке",of:"из",stripe:"с полосой",
+    bad:n=>`Введите номер от 1 до ${n}`,show:"Показать в таблице",
+    lossH:"Расчёт сигнала",reset:"Очистить",
+    hint:"Впишите сигнал в любой точке, которую знаете, — остальные досчитаются вперёд и назад.",
+    p0:"OLT, dBm",dist:"Расстояние, км",before:"До, dBm",after:"После, dBm",closure:"Сплиттер в кложере",cabinet:"Сплиттер в шкафу",
+    link64:"Автоподбор сплиттеров: вместе 1:64",
+    approx:"Расстояние не указано — значения приблизительные (без потерь в кабеле).",
+    none:"—",total:"Общие потери, dB",
+    settings:"Настройки расчёта",rate:"dB на 1 км",sens:"Предел у клиента, dBm",
+    stOk:"Клиент: в норме",stLow:"Клиент: мало запаса (<3 dB)",stBad:"Клиент: ниже предела",stOver:"Клиент: перегрузка (выше −8 dBm)",margin:"Запас",
+    cap:"Нажмите на ячейку, чтобы выбрать волокно. Штриховка = трубка с полосой.",
+    tbl:(n,f,t)=>`${n}${f?" · "+f:""} · ${t} трубок`,corner:"тр./вол."},
+  he:{title:"צבעי סיבים וניחות",sub:"כבל אופטי · איתור סיב · תקציב הפסדים",
+    cableH:"כבל",cableType:"סוג כבל",firm:"חברה",fiberNo:"מספר סיב",
+    tube:"צינורית",fiber:"סיב בצינורית",of:"מתוך",stripe:"עם פס",
+    bad:n=>`הזן מספר בין 1 ל-${n}`,show:"הצג בטבלה",
+    lossH:"חישוב אות",reset:"נקה",
+    hint:"הזן את האות בכל נקודה שידועה לך — שאר הנקודות יחושבו קדימה ואחורה.",
+    p0:"מוקד (OLT), dBm",dist:"מרחק, ק״מ",before:"לפני, dBm",after:"אחרי, dBm",closure:"מפצל בקלוזר",cabinet:"מפצל בארונית",
+    link64:"התאמת מפצלים אוטומטית: יחד 1:64",
+    approx:"לא הוזן מרחק — הערכים משוערים (ללא ניחות בכבל).",
+    none:"—",total:"סה״כ ניחות, dB",
+    settings:"הגדרות חישוב",rate:"dB לק״מ",sens:"סף מינימלי אצל הלקוח, dBm",
+    stOk:"לקוח: תקין",stLow:"לקוח: מרווח נמוך (<3 dB)",stBad:"לקוח: מתחת לסף",stOver:"לקוח: עומס יתר (מעל −8 dBm)",margin:"מרווח",
+    cap:"לחץ על תא לבחירת סיב. קווקו = צינורית עם פס.",
+    tbl:(n,f,t)=>`${n}${f?" · "+f:""} · ${t} צינוריות`,corner:"צינ׳/סיב"}
+};
+let T = TT[LANG];
+
+const $ = id => document.getElementById(id);
+const store = {get:k=>{try{return localStorage.getItem(k)}catch(e){return null}},
+               set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}}};
+let cableId = store.get("ff_cable2") || "F288"; if(!CABLES[cableId]) cableId="F288";
+let firmId  = store.get("ff_firm")   || "HOT";  if(!FIRMS.find(f=>f.id===firmId)) firmId="HOT";
+
+const iso = s => /[\u0590-\u05FF]/.test(s) ? s : "\u200E"+s+"\u200E";
+const cname = c => typeof c.name==="string" ? c.name : c.name[LANG];
+const tubesOf = () => { const c=CABLES[cableId]; return c.byFirm ? F288_TUBES[FIRMS.find(f=>f.id===firmId).scheme] : c.tubes; };
+const col = x => ({key:x.k, stripe:x.s, ...COLORS[x.k]});
+
+function paint(el,c){
+  el.style.backgroundColor = c.hex;
+  el.style.color = c.dark ? "#111" : "#fff";
+  if(c.stripe){ el.classList.add("stripe"); el.style.setProperty("--sc", c.key==="black" ? "rgba(255,255,255,.45)" : "rgba(0,0,0,.3)"); }
+}
+function chip(c){
+  const st = c.stripe ? `background-image:repeating-linear-gradient(135deg,transparent 0 5px,${c.key==="black"?"#fff":"#000"} 5px 7px)` : "";
+  return `<span class="chip"><span class="sw" style="background-color:${c.hex};${st}"></span><b>${c[LANG]}${c.stripe?`<small>+ ${T.stripe}</small>`:""}</b></span>`;
+}
+
+function buildSelects(){
+  $("cable").innerHTML = Object.entries(CABLES).map(([id,c])=>`<option value="${id}">${iso(cname(c))}</option>`).join("");
+  $("cable").value = cableId;
+  $("firm").innerHTML = FIRMS.map(f=>`<option value="${f.id}">${f.id}</option>`).join("");
+  $("firm").value = firmId;
+  $("firm").disabled = !CABLES[cableId].byFirm;
+  const opts = SPLITTERS.map(x=>`<option value="${x.id}">${x.id==="none"?T.none:x.id}</option>`).join("");
+  for(const [id,def] of [["sp1","1:4"],["sp2","1:8"]]){
+    const v = $(id).value || def;
+    $(id).innerHTML = opts; $(id).value = v;
+  }
+}
+
+function buildTable(){
+  const c = CABLES[cableId], tubes = tubesOf();
+  $("tblTitle").textContent = T.tbl(iso(cname(c)), c.byFirm ? iso(firmId) : "", tubes.length);
+  let h = `<thead><tr><th class="tube corner">${T.corner}</th>`;
+  for(let f=1; f<=c.fibers; f++) h += `<th data-hf="${f}">${f}</th>`;
+  h += `</tr></thead><tbody>`;
+  tubes.forEach((_,i)=>{
+    h += `<tr><th class="tube" data-ht="${i+1}">${i+1}</th>`;
+    for(let f=1; f<=c.fibers; f++){ const n=i*c.fibers+f; h += `<td data-n="${n}" data-f="${f}">${n}</td>`; }
+    h += `</tr>`;
+  });
+  $("tbl").innerHTML = h + `</tbody>`;
+  $("tbl").querySelectorAll("[data-hf]").forEach(el=>paint(el,col(FIBERS[el.dataset.hf-1])));
+  $("tbl").querySelectorAll("[data-ht]").forEach(el=>paint(el,col(tubes[el.dataset.ht-1])));
+  $("tbl").querySelectorAll("td").forEach(el=>paint(el,col(FIBERS[el.dataset.f-1])));
+}
+
+function showCell(cell){
+  if(!cell) return;
+  const wrap = document.querySelector(".tbl-wrap");
+  const panel = wrap.closest(".panel");
+  window.scrollTo(0, panel.getBoundingClientRect().top + window.scrollY - 10);
+  const wr = wrap.getBoundingClientRect(), cr = cell.getBoundingClientRect();
+  wrap.scrollTop  += (cr.top  - wr.top)  - (wr.height - cr.height)/2;
+  wrap.scrollLeft += (cr.left - wr.left) - (wr.width  - cr.width)/2;
+  cell.classList.remove("flash"); void cell.offsetWidth; cell.classList.add("flash");
+}
+function lookup(){
+  const c = CABLES[cableId], tubes = tubesOf(), total = tubes.length*c.fibers;
+  const n = parseInt($("fiber").value,10);
+  $("tbl").querySelectorAll(".hit,.hitrow").forEach(e=>e.classList.remove("hit","hitrow"));
+  if(!n || n<1 || n>total){ $("result").innerHTML = `<div class="msg ${$("fiber").value?"err":""}">${T.bad(total)}</div>`; return; }
+  const tube = Math.ceil(n/c.fibers), fib = n-(tube-1)*c.fibers;
+  $("result").innerHTML = `
+    <div class="result">
+      <div class="res"><span class="k">${T.tube}</span><span class="n">${tube}</span>${chip(col(tubes[tube-1]))}</div>
+      <div class="res"><span class="k">${T.fiber}</span><span class="n">${fib}</span>${chip(col(FIBERS[fib-1]))}</div>
+    </div>
+    <div class="msg">${n} ${T.of} ${total} · ${iso(cname(c))}${c.byFirm?" · "+iso(firmId):""}</div>
+    <button class="link" id="showBtn" type="button">${T.show}</button>`;
+  const cell = $("tbl").querySelector(`td[data-n="${n}"]`);
+  if(cell){ cell.classList.add("hit"); cell.parentElement.classList.add("hitrow"); }
+  $("showBtn").onclick = ()=> showCell(cell);
+}
+
+// ===== Цепочка сигнала =====
+// точки p0..p4 (dBm), между ними потери l0..l3: d1, sp1, d2, sp2
+let anchor = null;   // индекс точки, которую ввёл пользователь
+const fmt = v => (Math.round(v*100)/100).toFixed(2);
+const num = id => { const v = parseFloat(String($(id).value).replace(",",".").replace("−","-").trim()); return isNaN(v) ? null : v; };
+
+function losses(){
+  const rate = Math.max(0, num("rate") ?? 0.25);
+  const sp = id => (SPLITTERS.find(x=>x.id===$(id).value)||SPLITTERS[0]).db;
+  return [Math.max(0,num("d1")??0)*rate, sp("sp1"), Math.max(0,num("d2")??0)*rate, sp("sp2")];
+}
+
+function calc(){
+  const L = losses();
+  L.forEach((v,i)=> $("l"+i).textContent = i%2 ? `−${fmt(v)}` : `−${fmt(v)} dB`);
+  $("total").textContent = fmt(L.reduce((a,b)=>a+b,0));
+
+  const lv = [null,null,null,null,null];
+  if(anchor!==null){
+    const base = num("p"+anchor);
+    if(base!==null){
+      lv[anchor] = base;
+      for(let i=anchor+1;i<5;i++) lv[i] = lv[i-1]-L[i-1];
+      for(let i=anchor-1;i>=0;i--) lv[i] = lv[i+1]+L[i];
+    }
+  }
+  for(let i=0;i<5;i++){
+    const box = $("pt"+i), inp = $("p"+i);
+    box.classList.toggle("anchor", i===anchor);
+    box.classList.toggle("calc", anchor!==null && i!==anchor);
+    if(i!==anchor) inp.value = lv[i]===null ? "" : fmt(lv[i]);
+  }
+
+  $("approx").hidden = !(lv[0]!==null && (num("d1")===null || num("d2")===null));
+  const st = $("status");
+  if(lv[4]===null){ st.hidden = true; return; }
+  const rx = lv[4], m = rx - (num("sens") ?? -23.9);
+  let cls, txt;
+  if(rx > -8){ cls="st-low"; txt=T.stOver; }
+  else if(m < 0){ cls="st-bad"; txt=T.stBad; }
+  else if(m < 3){ cls="st-low"; txt=T.stLow; }
+  else { cls="st-ok"; txt=T.stOk; }
+  st.hidden = false; st.className = "status "+cls;
+  st.innerHTML = `<span>${txt}</span><span>${T.margin}: <bdi dir="ltr">${fmt(m)} dB</bdi></span>`;
+}
+
+for(let i=0;i<5;i++){
+  $("p"+i).addEventListener("focus", e=>{
+    const el = e.target;
+    setTimeout(()=>{ if($("pt"+i).classList.contains("calc")) el.select(); else { const n=el.value.length; el.setSelectionRange(n,n); } }, 0);
+  });
+  $("p"+i).addEventListener("input", ()=>{
+    const el=$("p"+i), v=el.value.replace("−","-");
+    if(v.indexOf("-")>0){ el.value = "-"+v.replace(/-/g,""); } anchor = $("p"+i).value==="" ? null : i; calc(); });
+}
+["d1","sp1","d2","sp2","rate","sens"].forEach(id=>$(id).addEventListener("input",calc));
+document.querySelectorAll(".pm").forEach(btn=>btn.addEventListener("click",()=>{
+  const inp = $(btn.dataset.for), v = inp.value.trim().replace("−","-");
+  inp.value = v.startsWith("-") ? v.slice(1) : "-"+v;
+  inp.dispatchEvent(new Event("input"));
+}));
+// Автоподбор: произведение двух сплиттеров = 64 (можно отключить галочкой)
+function pair(from, to){
+  if(!$("link64").checked) return;
+  const v = $(from).value; if(v==="none") return;
+  const m = 64 / parseInt(v.split(":")[1],10), target = `1:${m}`;
+  if(SPLITTERS.some(x=>x.id===target)){ $(to).value = target; calc(); }
+}
+$("sp1").addEventListener("change", ()=>pair("sp1","sp2"));
+$("sp2").addEventListener("change", ()=>pair("sp2","sp1"));
+$("link64").addEventListener("change", ()=>pair("sp1","sp2"));
+
+// Кнопка OK/Enter на клавиатуре — скрыть клавиатуру
+document.querySelectorAll("input").forEach(i=>i.setAttribute("enterkeyhint","done"));
+document.addEventListener("keydown", e=>{
+  if((e.key==="Enter" || e.keyCode===13) && e.target.matches("input")){ e.preventDefault(); e.target.blur(); }
+});
+
+$("reset").onclick = ()=>{ anchor=null; ["d1","d2"].forEach(id=>$(id).value=""); calc(); };
+
+// ===== Старт =====
+function applyLang(){
+  T = TT[LANG];
+  document.documentElement.lang = LANG;
+  document.documentElement.dir = LANG==="he" ? "rtl" : "ltr";
+  document.querySelectorAll("[data-t]").forEach(el=>{ el.textContent = T[el.dataset.t]; });
+  $("lang-ru").setAttribute("aria-pressed", LANG==="ru");
+  $("lang-he").setAttribute("aria-pressed", LANG==="he");
+  buildSelects(); buildTable(); lookup(); calc();
+}
+const setLang = l => { LANG = l; store.set("ff_lang", l); applyLang(); };
+$("lang-ru").onclick = ()=>setLang("ru");
+$("lang-he").onclick = ()=>setLang("he");
+$("cable").onchange = e=>{ cableId=e.target.value; store.set("ff_cable2",cableId); $("firm").disabled=!CABLES[cableId].byFirm; buildTable(); lookup(); };
+$("firm").onchange  = e=>{ firmId=e.target.value; store.set("ff_firm",firmId); buildTable(); lookup(); };
+$("fiber").oninput = lookup;
+$("tbl").onclick = e=>{ const td=e.target.closest("td"); if(td){ $("fiber").value=td.dataset.n; lookup(); } };
+applyLang();
+</script>
+<script>if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js").catch(()=>{});}</script>
+</body>
+</html>
