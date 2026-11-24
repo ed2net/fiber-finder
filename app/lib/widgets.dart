@@ -292,8 +292,8 @@ class _DrumWheelState extends State<DrumWheel> {
       final dt = now.difference(_lastTick).inMicroseconds / 1e6;
       _lastTick = now;
       ctl.jumpTo(ctl.offset + _spinV * ext * dt);
-      _spinV *= 1 - (dt / 0.9).clamp(0.0, 1.0); // плавное затухание (~1 с)
-      if (_spinV.abs() < 1.2) {
+      _spinV *= 1 - (dt / 1.5).clamp(0.0, 1.0); // плавное затухание (~1.5 с)
+      if (_spinV.abs() < 1.0) {
         _stopSpin();
         ctl.animateToItem((ctl.offset / ext).round(), duration: const Duration(milliseconds: 220), curve: Curves.easeOut);
       }
