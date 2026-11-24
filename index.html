@@ -111,6 +111,11 @@ html[dir=rtl] #tbl,html[dir=rtl] #loss{direction:rtl}
 html:not(.light) .ic-tube{border-color:#29b6ff;background:#fff;box-shadow:0 0 0 2px #0a6cf0 inset,0 0 10px rgba(40,170,255,.9)}
 .ic-fiber{width:34px;height:9px;border-radius:9px;background:#fff;flex:none}
 html.light .ic-fiber{background:#0a3a7a}
+.numIn{display:flex;align-items:center;justify-content:center;gap:3px;width:calc(100% - 4px);height:34px;border-radius:9px;cursor:pointer;
+  border:1.5px solid #8fb0d4;background:var(--acc);color:#fff;box-shadow:0 3px 0 #2d4b6d;font-family:inherit;padding:0}
+.numIn:active{transform:translateY(2px);box-shadow:0 1px 0 #2d4b6d}
+.numIn .ic-no{border-color:#fff;font-size:min(14px,20cqi)}
+.numIn svg{width:min(16px,22cqi);height:min(16px,22cqi);flex:none}
 .ic-no{font-size:15px;font-weight:800;border:2px solid currentColor;border-radius:7px;padding:3px 4px;line-height:1}
 .wheel{flex:1;min-height:0;display:flex;flex-direction:column;background:var(--inner);border-radius:13px;overflow:hidden;position:relative;
   box-shadow:inset 0 3px 10px rgba(0,0,0,.6),inset 0 -3px 10px rgba(0,0,0,.55),inset 3px 0 6px rgba(0,0,0,.35),inset -3px 0 6px rgba(0,0,0,.35),0 1px 0 rgba(255,255,255,.08)}
@@ -148,7 +153,12 @@ html.light .row{box-shadow:0 2px 4px rgba(13,35,66,.18),inset 0 1px 0 #fff,inset
 .res .ch>span:last-child{min-width:0;overflow:hidden}
 .res .ch .ic-tube{width:15px;height:15px;border-width:3px;box-shadow:none!important}
 .res .ch .ic-fiber{width:18px;height:6px}
-.res .ch .ic-no{font-size:12px;padding:2px 3px}
+.res .ch .numIn{display:flex;align-items:center;justify-content:center;gap:3px;width:calc(100% - 4px);height:34px;border-radius:9px;cursor:pointer;
+  border:1.5px solid #8fb0d4;background:var(--acc);color:#fff;box-shadow:0 3px 0 #2d4b6d;font-family:inherit;padding:0}
+.numIn:active{transform:translateY(2px);box-shadow:0 1px 0 #2d4b6d}
+.numIn .ic-no{border-color:#fff;font-size:min(14px,20cqi)}
+.numIn svg{width:min(16px,22cqi);height:min(16px,22cqi);flex:none}
+.ic-no{font-size:12px;padding:2px 3px}
 .res .cv{display:flex;align-items:center;justify-content:center;gap:6px;font-weight:800;font-size:min(34px,24cqi);max-width:100%;color:var(--res-num);line-height:1}
 .ring{width:min(32px,24cqi);height:min(32px,24cqi);border-radius:50%;border:min(6px,4.5cqi) solid;flex:none;background:transparent}
 html.light .ring{background:#fff}
@@ -274,7 +284,7 @@ html.light .pad .box{background-color:#f4f8fd}
       </g>
       <g fill="#bfe8ff"><circle cx="30" cy="5" r="2.2"/><circle cx="40" cy="11" r="2.2"/><circle cx="45" cy="23" r="2.2"/><circle cx="22" cy="8" r="2.2"/><circle cx="43" cy="34" r="2.2"/></g>
     </svg>
-    <div class="title"><span data-t="title"></span><span class="ver">v8</span></div>
+    <div class="title"><span data-t="title"></span><span class="ver">v10</span></div>
     <div class="lang"><button data-l="ru">Русский</button><button data-l="he">עברית</button></div>
   </div>
 
@@ -293,7 +303,7 @@ html.light .pad .box{background-color:#f4f8fd}
       <div class="wheels">
         <div class="col"><div class="chead"><span class="ic-tube"></span><span data-t="tube"></span></div><div class="wheel" id="wT"></div></div>
         <div class="col"><div class="chead"><span class="ic-fiber"></span><span data-t="fiber"></span></div><div class="wheel" id="wF"></div></div>
-        <div class="col"><div class="chead"><span class="ic-no">№</span></div><div class="wheel" id="wN"></div></div>
+        <div class="col"><div class="chead"><button class="numIn" id="numIn" title="№"><span class="ic-no">№</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg></button></div><div class="wheel" id="wN"></div></div>
       </div>
     </div>
     <div class="res">
@@ -475,7 +485,7 @@ class Wheel{
       const p=Math.min(1,(now-t0)/dur), e=1-Math.pow(1-p,3);
       this.pos=from+dist*e; this.draw();
       if(p<1) this.raf=requestAnimationFrame(tick);
-      else {this.raf=0; this.pos=target; this.draw(); this.silent=false; this.normalize()}
+      else {this.raf=0; this.pos=target; this.draw(); this.silent=false; this.wTgt=null; this.normalize()}
     };
     this.raf=requestAnimationFrame(tick);
   }
@@ -493,7 +503,7 @@ class Wheel{
   bind(){
     const vp=this.vp; let drag=null;
     vp.addEventListener('pointerdown',e=>{
-      this.stop(); this.silent=false; vp.setPointerCapture(e.pointerId);
+      this.stop(); this.silent=false; this.wTgt=null; vp.setPointerCapture(e.pointerId);
       drag={y0:e.clientY,p0:this.pos,moved:false,s:[{t:performance.now(),y:e.clientY}]};
     });
     vp.addEventListener('pointermove',e=>{
@@ -518,10 +528,19 @@ class Wheel{
     vp.addEventListener('pointerup',end);
     // горизонтальный жест забирает прокрутка экранов (свайп) — просто ставим колесо на ближайшую строку
     vp.addEventListener('pointercancel',()=>{if(!drag) return; drag=null; this.animateTo(Math.round(this.pos),false,200)});
-    let acc=0, lastW=0;
+    // Колесо мыши: 1 щелчок = 1 строка, быстрая прокрутка разгоняет барабан (инерция)
+    let lastW=0;
     vp.addEventListener('wheel',e=>{
-      e.preventDefault(); acc+=e.deltaY; const now=performance.now();
-      if(Math.abs(acc)>=40 || now-lastW>120 && Math.abs(acc)>2){this.step(Math.sign(acc)); acc=0; lastW=now}
+      e.preventDefault();
+      let d=e.deltaY*(e.deltaMode===1?33:e.deltaMode===2?300:1);
+      const now=performance.now(), dt=now-lastW; lastW=now;
+      const boost = dt<35?3 : dt<70?2 : dt<120?1.4 : 1;
+      let steps=d/100*boost;
+      if(Math.abs(d)>=50 && Math.abs(steps)<1) steps=Math.sign(steps);   // каждый щелчок — минимум 1 строка
+      if(this.wTgt==null) this.wTgt=Math.round(this.pos);
+      this.wTgt+=steps;
+      const tgt=Math.round(this.wTgt);
+      if(tgt!==Math.round(this.pos)||this.raf) this.animateTo(tgt,false,Math.min(650,260+Math.abs(tgt-this.pos)*35));
     },{passive:false});
   }
 }
@@ -693,6 +712,13 @@ if(SPL_BUILDING[LS.b]===undefined||ratio(SPL_CLOSURE[LS.c][0])*ratio(SPL_BUILDIN
 
 /* ===== СТАРТ ===== */
 let hoverWheel=null;
+document.getElementById('numIn').onclick=()=>{
+  const N=C.T*C.F;
+  openPad(`№  (1–${N})`, S.t*C.F+S.f+1, '', v=>{
+    const n=Math.min(N,Math.max(1,Math.round(Math.abs(v))))-1;
+    wN.setValue(n); onNum(n);
+  });
+};
 wT=new Wheel(document.getElementById('wT'),{count:C.T,item:itemTube,onChange:onTube});
 wF=new Wheel(document.getElementById('wF'),{count:C.F,item:itemFiber,onChange:onFiber});
 wN=new Wheel(document.getElementById('wN'),{count:C.T*C.F,item:itemNum,cls:'num',onChange:onNum});
