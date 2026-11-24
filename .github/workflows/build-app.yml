@@ -89,10 +89,12 @@ jobs:
       - run: flutter create --project-name fiber_finder --org com.ed2net --platforms=web .
       - run: flutter pub get
       - run: flutter build web --release --no-web-resources-cdn
-      - uses: actions/upload-artifact@v4
+      - uses: peaceiris/actions-gh-pages@v4
         with:
-          name: web-preview
-          path: app/build/web
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: app/build/web
+          publish_branch: web-preview
+          force_orphan: true
 
   release:
     needs: [android, windows]
