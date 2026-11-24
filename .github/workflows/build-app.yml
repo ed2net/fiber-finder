@@ -61,9 +61,9 @@ jobs:
       - run: flutter pub get
       - name: Иконка
         run: dart run flutter_launcher_icons
-      - name: Заголовок окна
+      - name: Окно как телефон, во всю высоту
         shell: pwsh
-        run: (Get-Content windows/runner/main.cpp) -replace 'L"fiber_finder"', 'L"Fiber Finder"' | Set-Content windows/runner/main.cpp
+        run: Copy-Item windows_patch/main.cpp windows/runner/main.cpp -Force
       - run: flutter build windows --release
       - name: Упаковать (portable)
         shell: pwsh

@@ -34,7 +34,11 @@ class FiberApp extends StatelessWidget {
             brightness: s.dark ? Brightness.dark : Brightness.light,
             colorSchemeSeed: const Color(0xFF466C96),
           ),
-          builder: (context, child) => Directionality(textDirection: s.rtl ? TextDirection.rtl : TextDirection.ltr, child: child!),
+          builder: (context, child) => MediaQuery(
+            // размер шрифта подбирается самим приложением — системное увеличение шрифта не ломает строки
+            data: MediaQuery.of(context).copyWith(textScaler: TextScaler.noScaling),
+            child: Directionality(textDirection: s.rtl ? TextDirection.rtl : TextDirection.ltr, child: child!),
+          ),
           home: HomePage(s: s),
         ),
       );
@@ -116,7 +120,7 @@ class _HomePageState extends State<HomePage> {
         decoration: BoxDecoration(gradient: pal.bg),
         child: SafeArea(
           child: LayoutBuilder(builder: (context, c) {
-            final wide = c.maxWidth >= 900 && c.maxHeight >= 520;
+            const wide = false; // всегда «как телефон», со свайпом экранов
             final header = Row(children: [
               GestureDetector(
                 onTap: s.toggleTheme,
@@ -142,8 +146,8 @@ class _HomePageState extends State<HomePage> {
             ]);
             final fiber = FiberPage(s: s, pal: pal);
             final loss = LossPage(s: s, pal: pal);
-            return Padding(
-              padding: EdgeInsets.fromLTRB(wide ? 18 : 8, 6, wide ? 18 : 8, 8),
+            return Center(child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 560), child: Padding(
+              padding: const EdgeInsets.fromLTRB(8, 6, 8, 8),
               child: Column(children: [
                 header,
                 const SizedBox(height: 7),
@@ -174,7 +178,7 @@ class _HomePageState extends State<HomePage> {
                         ),
                 ),
               ]),
-            );
+            )));
           }),
         ),
       ),

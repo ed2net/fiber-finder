@@ -255,6 +255,33 @@ class _DrumWheelState extends State<DrumWheel> {
     }
   }
 
+  // Колесо мыши: каждый щелчок добавляет скорость — барабан крутится по инерции,
+  // пока не остановится сам или его не остановят кликом
+  DateTime _lastSig = DateTime(2000);
+  void _onSignal(PointerSignalEvent e) {
+    if (e is! PointerScrollEvent) return;
+    GestureBinding.instance.pointerSignalResolver.register(e, (ev) {
+      final se = ev as PointerScrollEvent;
+      if (!ctl.hasClients || se.scrollDelta.dy == 0) return;
+      prog = false;
+      tok++;
+      final now = DateTime.now();
+      final quick = now.difference(_lastSig).inMilliseconds < 250;
+      _lastSig = now;
+      final pos = ctl.position;
+      double cur = 0;
+      if (pos is ScrollPositionWithSingleContext) {
+        final act = pos.activity;
+        if (act != null && quick) cur = act.velocity;
+      }
+      final dir = se.scrollDelta.dy.sign;
+      if (cur != 0 && cur.sign != dir) cur = 0;
+      final add = dir * ext * (quick ? 9.0 : 6.0);
+      final v = (cur + add).clamp(-ext * 120, ext * 120).toDouble();
+      if (pos is ScrollPositionWithSingleContext) pos.goBallistic(v);
+    });
+  }
+
   void onSelected(int i) {
     final m = mod(i, widget.count);
     if (m != sel) setState(() => sel = m);
@@ -290,12 +317,7 @@ class _DrumWheelState extends State<DrumWheel> {
             final shade = pal.dark ? const Color(0xCC030A16) : const Color(0xCCC4D4E8);
             return Stack(children: [
               Listener(
-                onPointerSignal: (e) {
-                  if (e is PointerScrollEvent) {
-                    snapTimer?.cancel();
-                    snapTimer = Timer(const Duration(milliseconds: 140), snap);
-                  }
-                },
+                onPointerSignal: _onSignal,
                 child: NotificationListener<ScrollNotification>(
                   onNotification: (n) {
                     if (n is ScrollStartNotification && n.dragDetails != null) {
@@ -309,14 +331,14 @@ class _DrumWheelState extends State<DrumWheel> {
                     itemExtent: ext,
                     diameterRatio: 1.45,
                     perspective: 0.0035,
-                    physics: const FixedExtentScrollPhysics(),
+                    physics: const FixedExtentScrollPhysics(parent: ClampingScrollPhysics()),
                     onSelectedItemChanged: onSelected,
                     childDelegate: ListWheelChildLoopingListDelegate(
                       children: List.generate(
                         widget.count,
                         (i) => Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2.5),
-                          child: widget.itemBuilder(context, i, i == sel, rowW, rowH),
+                          child: Listener(onPointerSignal: _onSignal, child: widget.itemBuilder(context, i, i == sel, rowW, rowH)),
                         ),
                       ),
                     ),

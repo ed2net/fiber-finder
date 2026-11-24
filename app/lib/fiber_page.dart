@@ -40,7 +40,7 @@ class FiberPage extends StatelessWidget {
       selected: sel,
       pal: pal,
       child: Row(children: [
-        Text('${i + 1}', style: TextStyle(fontSize: sel ? nf * 1.08 : nf, fontWeight: FontWeight.w800)),
+        Text('${i + 1}', maxLines: 1, softWrap: false, style: TextStyle(fontSize: sel ? nf * 1.08 : nf, fontWeight: FontWeight.w800)),
         const SizedBox(width: 4),
         Swatch(index: i, size: 16),
         const SizedBox(width: 5),
@@ -66,7 +66,7 @@ class FiberPage extends StatelessWidget {
       selected: sel,
       pal: pal,
       padding: EdgeInsets.zero,
-      child: Center(child: Text('${i + 1}', style: TextStyle(fontSize: f < maxByW ? f : maxByW, fontWeight: FontWeight.w800))),
+      child: Center(child: FittedBox(fit: BoxFit.scaleDown, child: Text('${i + 1}', maxLines: 1, softWrap: false, style: TextStyle(fontSize: f < maxByW ? f : maxByW, fontWeight: FontWeight.w800)))),
     );
   }
 
