@@ -127,11 +127,11 @@ html.light .wheel{box-shadow:inset 0 3px 8px rgba(13,35,66,.25),inset 0 -3px 8px
   backface-visibility:hidden;box-shadow:0 3px 5px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.55),inset 0 -2px 0 rgba(0,0,0,.12)}
 html.light .row{box-shadow:0 2px 4px rgba(13,35,66,.18),inset 0 1px 0 #fff,inset 0 -2px 0 rgba(13,35,66,.06)}
 .row .n{font-weight:800;font-size:min(23px,13cqi,calc(var(--rh,44px)*.52));min-width:.9em;text-align:center}
-.row .nm{font-weight:700;font-size:var(--nmfs,min(18px,11cqi,calc(var(--rh,44px)*.4)));white-space:nowrap;overflow:hidden;text-overflow:clip;letter-spacing:-.45px}
+.row .nm{font-weight:400;font-size:var(--nmfs,min(18px,11cqi,calc(var(--rh,44px)*.4)));white-space:nowrap;overflow:hidden;text-overflow:clip;letter-spacing:-.3px}
 .row.num{display:flex;justify-content:center;padding:0}
 .row.num .n{font-size:min(32px,36cqi,calc(var(--rh,44px)*.66))}
 .row.on{background:var(--on);color:var(--on-t);border-color:var(--on-b);box-shadow:var(--on-glow);left:1px;right:1px;z-index:6}
-.row.on .nm{font-weight:700}
+.row.on .nm{font-weight:500}
 .row.on .n{font-size:min(25px,14.5cqi,calc(var(--rh,44px)*.58))}
 .row.num.on .n{font-size:min(36px,40cqi,calc(var(--rh,44px)*.72))}
 .sw{width:16px;height:16px;border-radius:5px;position:relative;overflow:hidden;
@@ -274,7 +274,7 @@ html.light .pad .box{background-color:#f4f8fd}
       </g>
       <g fill="#bfe8ff"><circle cx="30" cy="5" r="2.2"/><circle cx="40" cy="11" r="2.2"/><circle cx="45" cy="23" r="2.2"/><circle cx="22" cy="8" r="2.2"/><circle cx="43" cy="34" r="2.2"/></g>
     </svg>
-    <div class="title"><span data-t="title"></span><span class="ver">v6</span></div>
+    <div class="title"><span data-t="title"></span><span class="ver">v7</span></div>
     <div class="lang"><button data-l="ru">Русский</button><button data-l="he">עברית</button></div>
   </div>
 
@@ -440,7 +440,7 @@ class Wheel{
     for(let i=0;i<this.count;i++){const t=document.createElement('div');t.innerHTML=this.item(i);const nm=t.querySelector('.nm');if(nm&&nm.textContent.length>len){len=nm.textContent.length;best=i}}
     if(best<0) return;
     const n=this.nodes[5], html=n.innerHTML, on=n.classList.contains('on');
-    this.vp.style.removeProperty('--nmfs'); n.innerHTML=this.item(best); n.classList.remove('on');
+    this.vp.style.removeProperty('--nmfs'); n.innerHTML=this.item(best); n.classList.remove('on'); n.querySelector('.nm')&&(n.querySelector('.nm').style.fontWeight='500');
     const nn=n.querySelector('.n'); if(nn) nn.textContent=String(this.count);   // самый широкий номер
     const el=n.querySelector('.nm'), fs=parseFloat(getComputedStyle(el).fontSize), r=el.clientWidth/el.scrollWidth;
     this.vp.style.setProperty('--nmfs',(r<1?fs*r*0.93:fs).toFixed(2)+'px');
