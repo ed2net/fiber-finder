@@ -209,6 +209,7 @@ class _DrumWheelState extends State<DrumWheel> {
   @override
   void dispose() {
     snapTimer?.cancel();
+    _spin?.cancel();
     ctl.dispose();
     super.dispose();
   }
@@ -257,7 +258,13 @@ class _DrumWheelState extends State<DrumWheel> {
 
   // Колесо мыши: каждый щелчок добавляет скорость — барабан крутится по инерции,
   // пока не остановится сам или его не остановят кликом
+  // Колесо мыши: каждый щелчок разгоняет барабан, он крутится по инерции и плавно
+  // останавливается; клик по барабану останавливает сразу
+  double _spinV = 0; // строк в секунду
+  Timer? _spin;
   DateTime _lastSig = DateTime(2000);
+  DateTime _lastTick = DateTime.now();
+
   void _onSignal(PointerSignalEvent e) {
     if (e is! PointerScrollEvent) return;
     GestureBinding.instance.pointerSignalResolver.register(e, (ev) {
@@ -266,20 +273,37 @@ class _DrumWheelState extends State<DrumWheel> {
       prog = false;
       tok++;
       final now = DateTime.now();
-      final quick = now.difference(_lastSig).inMilliseconds < 250;
+      final quick = now.difference(_lastSig).inMilliseconds < 300;
       _lastSig = now;
-      final pos = ctl.position;
-      double cur = 0;
-      if (pos is ScrollPositionWithSingleContext) {
-        final act = pos.activity;
-        if (act != null && quick) cur = act.velocity;
-      }
       final dir = se.scrollDelta.dy.sign;
-      if (cur != 0 && cur.sign != dir) cur = 0;
-      final add = dir * ext * (quick ? 9.0 : 6.0);
-      final v = (cur + add).clamp(-ext * 120, ext * 120).toDouble();
-      if (pos is ScrollPositionWithSingleContext) pos.goBallistic(v);
+      if (_spinV.sign != dir || !quick) _spinV = 0;
+      _spinV += dir * (quick ? 5.0 : 3.5);
+      if (_spinV.abs() > 80) _spinV = 80 * dir;
+      _startSpin();
     });
+  }
+
+  void _startSpin() {
+    if (_spin != null) return;
+    _lastTick = DateTime.now();
+    _spin = Timer.periodic(const Duration(milliseconds: 16), (_) {
+      if (!mounted || !ctl.hasClients) return _stopSpin();
+      final now = DateTime.now();
+      final dt = now.difference(_lastTick).inMicroseconds / 1e6;
+      _lastTick = now;
+      ctl.jumpTo(ctl.offset + _spinV * ext * dt);
+      _spinV *= 1 - (dt / 0.9).clamp(0.0, 1.0); // плавное затухание (~1 с)
+      if (_spinV.abs() < 1.2) {
+        _stopSpin();
+        ctl.animateToItem((ctl.offset / ext).round(), duration: const Duration(milliseconds: 220), curve: Curves.easeOut);
+      }
+    });
+  }
+
+  void _stopSpin() {
+    _spin?.cancel();
+    _spin = null;
+    _spinV = 0;
   }
 
   void onSelected(int i) {
@@ -318,6 +342,12 @@ class _DrumWheelState extends State<DrumWheel> {
             return Stack(children: [
               Listener(
                 onPointerSignal: _onSignal,
+                onPointerDown: (_) {
+                  if (_spin != null) {
+                    _stopSpin();
+                    ctl.animateToItem((ctl.offset / ext).round(), duration: const Duration(milliseconds: 150), curve: Curves.easeOut);
+                  }
+                },
                 child: NotificationListener<ScrollNotification>(
                   onNotification: (n) {
                     if (n is ScrollStartNotification && n.dragDetails != null) {
