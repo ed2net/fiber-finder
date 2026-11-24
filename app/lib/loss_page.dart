@@ -79,7 +79,7 @@ class LossPage extends StatelessWidget {
             _val(context, inKey, title: inTitle),
           ]),
         ),
-        Padding(padding: const EdgeInsets.fromLTRB(6, 14, 6, 0), child: Text(s.rtl ? '←' : '→', style: TextStyle(fontSize: 18, color: pal.muted))),
+        Padding(padding: const EdgeInsets.fromLTRB(6, 14, 6, 0), child: Icon(Icons.arrow_forward_rounded, size: 20, color: pal.muted)),
         Expanded(
           child: Column(children: [
             Text(s.tr('out'), style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: pal.muted)),

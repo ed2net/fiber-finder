@@ -458,7 +458,7 @@ class _KeypadState extends State<_Keypad> {
     return KeyEventResult.handled;
   }
 
-  Widget key(String label, String k, {bool acc = false, int flex = 1}) => Expanded(
+  Widget key(String label, String k, {bool acc = false, int flex = 1, IconData? icon}) => Expanded(
         flex: flex,
         child: Padding(
           padding: const EdgeInsets.all(4),
@@ -472,7 +472,7 @@ class _KeypadState extends State<_Keypad> {
                     child: Ink(
                       height: 52,
                       decoration: BoxDecoration(gradient: widget.pal.btn, borderRadius: BorderRadius.circular(12), border: Border.all(color: widget.pal.btnBorder)),
-                      child: Center(child: Text(label, style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: widget.pal.text))),
+                      child: Center(child: icon != null ? Icon(icon, size: 26, color: widget.pal.text) : Text(label, style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: widget.pal.text))),
                     ),
                   ),
                 ),
@@ -509,10 +509,10 @@ class _KeypadState extends State<_Keypad> {
               Directionality(
                 textDirection: TextDirection.ltr,
                 child: Column(children: [
-                  Row(children: [key('7', '7'), key('8', '8'), key('9', '9'), key('⌫', 'bs')]),
+                  Row(children: [key('7', '7'), key('8', '8'), key('9', '9'), key('', 'bs', icon: Icons.backspace_outlined)]),
                   Row(children: [key('4', '4'), key('5', '5'), key('6', '6'), key('±', 'pm')]),
                   Row(children: [key('1', '1'), key('2', '2'), key('3', '3'), key('.', '.')]),
-                  Row(children: [key('✕', 'x'), key('0', '0'), key('OK', 'ok', acc: true, flex: 2)]),
+                  Row(children: [key('', 'x', icon: Icons.close_rounded), key('0', '0'), key('OK', 'ok', acc: true, flex: 2)]),
                 ]),
               ),
             ]),
