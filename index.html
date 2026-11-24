@@ -120,7 +120,7 @@ html.light .wheel{box-shadow:inset 0 3px 8px rgba(13,35,66,.25),inset 0 -3px 8px
 .vp::after{bottom:0;background:linear-gradient(0deg,var(--shade) 0%,transparent 100%)}
 .arr{display:flex;align-items:center;justify-content:center;width:100%;height:22px;flex:none;border:0;background:transparent;cursor:pointer;color:var(--arr);padding:0}
 .arr svg{width:24px;height:16px}
-.vp{position:relative;flex:1;min-height:0;touch-action:none;cursor:grab;overflow:hidden;perspective:520px;perspective-origin:50% 50%}
+.vp{position:relative;flex:1;min-height:0;touch-action:pan-x;cursor:grab;overflow:hidden;perspective:520px;perspective-origin:50% 50%}
 .vp:active{cursor:grabbing}
 .row{position:absolute;left:2px;right:2px;top:calc(50% - var(--rh,44px)/2);height:var(--rh,44px);overflow:hidden;border-radius:7px;background:var(--row);color:var(--row-t);
   display:grid;grid-template-columns:auto 16px minmax(0,1fr);align-items:center;gap:4px;padding:0 4px;will-change:transform,opacity;border:2px solid transparent;
@@ -274,7 +274,7 @@ html.light .pad .box{background-color:#f4f8fd}
       </g>
       <g fill="#bfe8ff"><circle cx="30" cy="5" r="2.2"/><circle cx="40" cy="11" r="2.2"/><circle cx="45" cy="23" r="2.2"/><circle cx="22" cy="8" r="2.2"/><circle cx="43" cy="34" r="2.2"/></g>
     </svg>
-    <div class="title"><span data-t="title"></span><span class="ver">v7</span></div>
+    <div class="title"><span data-t="title"></span><span class="ver">v8</span></div>
     <div class="lang"><button data-l="ru">Русский</button><button data-l="he">עברית</button></div>
   </div>
 
@@ -515,7 +515,9 @@ class Wheel{
       }
       drag=null;
     };
-    vp.addEventListener('pointerup',end); vp.addEventListener('pointercancel',end);
+    vp.addEventListener('pointerup',end);
+    // горизонтальный жест забирает прокрутка экранов (свайп) — просто ставим колесо на ближайшую строку
+    vp.addEventListener('pointercancel',()=>{if(!drag) return; drag=null; this.animateTo(Math.round(this.pos),false,200)});
     let acc=0, lastW=0;
     vp.addEventListener('wheel',e=>{
       e.preventDefault(); acc+=e.deltaY; const now=performance.now();
