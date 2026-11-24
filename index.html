@@ -11,6 +11,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta http-equiv="Cache-Control" content="no-cache">
 <style>
 :root{
   --bg:radial-gradient(120% 80% at 50% 0%,#0b2546 0%,#04101f 55%,#020a15 100%);
@@ -65,6 +66,7 @@ html[dir=rtl] #tbl,html[dir=rtl] #loss{direction:rtl}
 /* header */
 .hdr{display:flex;align-items:center;gap:8px;padding:2px 2px 6px;flex:none}
 .logo{width:34px;height:34px;flex:none;cursor:pointer}
+.ver{font-size:11px;font-weight:700;opacity:.45;margin-inline-start:6px;vertical-align:super}
 .title{flex:1;min-width:0;overflow:hidden;white-space:nowrap;font-size:clamp(16px,4.6vw,25px);font-weight:800;color:var(--title);white-space:nowrap;letter-spacing:.2px}
 .lang{display:flex;border-radius:12px;padding:3px;background:var(--btn);border:1px solid var(--btn-b);flex:none}
 .lang button{border:0;background:transparent;color:var(--btn-t);font:700 clamp(12px,3.4vw,14px)/1 inherit;padding:6px 8px;border-radius:9px;cursor:pointer;font-family:inherit}
@@ -272,7 +274,7 @@ html.light .pad .box{background-color:#f4f8fd}
       </g>
       <g fill="#bfe8ff"><circle cx="30" cy="5" r="2.2"/><circle cx="40" cy="11" r="2.2"/><circle cx="45" cy="23" r="2.2"/><circle cx="22" cy="8" r="2.2"/><circle cx="43" cy="34" r="2.2"/></g>
     </svg>
-    <div class="title" data-t="title"></div>
+    <div class="title"><span data-t="title"></span><span class="ver">v5</span></div>
     <div class="lang"><button data-l="ru">Русский</button><button data-l="he">עברית</button></div>
   </div>
 
@@ -700,7 +702,11 @@ requestAnimationFrame(relayout);
 if(document.fonts&&document.fonts.ready) document.fonts.ready.then(relayout);
 </script>
 <script>
-if('serviceWorker' in navigator){addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}))}
+if('serviceWorker' in navigator){addEventListener('load',()=>{
+  navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{});
+  let reloaded=false;
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{if(!reloaded){reloaded=true;location.reload()}});
+})}
 </script>
 </body>
 </html>
