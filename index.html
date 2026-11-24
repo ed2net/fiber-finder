@@ -274,7 +274,7 @@ html.light .pad .box{background-color:#f4f8fd}
       </g>
       <g fill="#bfe8ff"><circle cx="30" cy="5" r="2.2"/><circle cx="40" cy="11" r="2.2"/><circle cx="45" cy="23" r="2.2"/><circle cx="22" cy="8" r="2.2"/><circle cx="43" cy="34" r="2.2"/></g>
     </svg>
-    <div class="title"><span data-t="title"></span><span class="ver">v5</span></div>
+    <div class="title"><span data-t="title"></span><span class="ver">v6</span></div>
     <div class="lang"><button data-l="ru">Русский</button><button data-l="he">עברית</button></div>
   </div>
 
@@ -443,7 +443,7 @@ class Wheel{
     this.vp.style.removeProperty('--nmfs'); n.innerHTML=this.item(best); n.classList.remove('on');
     const nn=n.querySelector('.n'); if(nn) nn.textContent=String(this.count);   // самый широкий номер
     const el=n.querySelector('.nm'), fs=parseFloat(getComputedStyle(el).fontSize), r=el.clientWidth/el.scrollWidth;
-    this.vp.style.setProperty('--nmfs',(r<1?fs*r*0.95:fs).toFixed(2)+'px');
+    this.vp.style.setProperty('--nmfs',(r<1?fs*r*0.93:fs).toFixed(2)+'px');
     n.innerHTML=html; n.classList.toggle('on',on);
   }
   draw(){
@@ -700,6 +700,12 @@ setCable(C.id); applyLang();
 function relayout(){layoutWheels();[wT,wF,wN].forEach(w=>w.refresh());fitText(document.querySelector('.title'));document.querySelectorAll('.res .ch>span:last-child').forEach(fitText)}
 requestAnimationFrame(relayout);
 if(document.fonts&&document.fonts.ready) document.fonts.ready.then(relayout);
+if(document.fonts&&document.fonts.addEventListener) document.fonts.addEventListener('loadingdone',relayout);
+[300,1000,2500].forEach(t=>setTimeout(relayout,t));
+// пересчёт при любом изменении размера окна/рамки (в т.ч. внутри приложения Claude)
+if(window.ResizeObserver){let rq=0;const ro=new ResizeObserver(()=>{cancelAnimationFrame(rq);rq=requestAnimationFrame(relayout)});
+  ro.observe(document.querySelector('.wheels'));ro.observe(document.querySelector('.hdr'));}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)relayout()});
 </script>
 <script>
 if('serviceWorker' in navigator){addEventListener('load',()=>{
