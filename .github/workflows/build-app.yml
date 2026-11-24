@@ -1,0 +1,92 @@
+name: Сборка приложения (Android + Windows)
+
+on:
+  push:
+    branches: [main]
+    paths: ['app/**', '.github/workflows/build-app.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Создать платформенные папки
+        run: flutter create --project-name fiber_finder --org com.ed2net --platforms=android .
+      - run: flutter pub get
+      - name: Иконка
+        run: dart run flutter_launcher_icons
+      - name: Название приложения
+        run: sed -i 's/android:label="fiber_finder"/android:label="Волокна"/' android/app/src/main/AndroidManifest.xml
+      - name: Постоянный ключ подписи (чтобы обновления ставились поверх)
+        env:
+          KS: ${{ secrets.ANDROID_KEYSTORE_B64 }}
+        run: |
+          if [ -n "$KS" ]; then mkdir -p ~/.android && echo "$KS" | base64 -d > ~/.android/debug.keystore && echo "keystore set"; else echo "no keystore secret — default key"; fi
+      - run: flutter analyze --no-fatal-infos --no-fatal-warnings || true
+      - run: flutter build apk --release
+      - run: cp build/app/outputs/flutter-apk/app-release.apk ../FiberFinder.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android
+          path: FiberFinder.apk
+
+  windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Создать платформенные папки
+        run: flutter create --project-name fiber_finder --org com.ed2net --platforms=windows .
+      - run: flutter pub get
+      - name: Иконка
+        run: dart run flutter_launcher_icons
+      - name: Заголовок окна
+        shell: pwsh
+        run: (Get-Content windows/runner/main.cpp) -replace 'L"fiber_finder"', 'L"Fiber Finder"' | Set-Content windows/runner/main.cpp
+      - run: flutter build windows --release
+      - name: Упаковать (portable)
+        shell: pwsh
+        run: |
+          Rename-Item build/windows/x64/runner/Release/fiber_finder.exe FiberFinder.exe
+          Compress-Archive -Path build/windows/x64/runner/Release/* -DestinationPath ../FiberFinder-Windows.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: FiberFinder-Windows.zip
+
+  release:
+    needs: [android, windows]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: app-v1.0.${{ github.run_number }}
+          name: Оптические волокна 1.0.${{ github.run_number }}
+          make_latest: true
+          files: |
+            FiberFinder.apk
+            FiberFinder-Windows.zip

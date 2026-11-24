@@ -1,0 +1,33 @@
+name: fiber_finder
+description: "Оптические волокна — цвета трубок/волокон и расчёт потерь GPON"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  shared_preferences: ^2.2.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_launcher_icons: ^0.14.1
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/icon.png
+
+flutter_launcher_icons:
+  android: true
+  image_path: "assets/icon.png"
+  adaptive_icon_background: "#5A7FA8"
+  adaptive_icon_foreground: "assets/icon_fg.png"
+  min_sdk_android: 21
+  windows:
+    generate: true
+    image_path: "assets/icon.png"
+    icon_size: 256
