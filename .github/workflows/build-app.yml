@@ -57,7 +57,7 @@ jobs:
           channel: stable
           cache: true
       - name: Создать платформенные папки
-        run: flutter create --project-name fiber_finder --org com.ed2net --platforms=windows .
+        run: flutter create --project-name fiber_finder --org com.ed2net --platforms=windows,android .
       - run: flutter pub get
       - name: Иконка
         run: dart run flutter_launcher_icons
